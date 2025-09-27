@@ -1,89 +1,129 @@
+import geometry2d.Circle;
+import geometry2d.Rectangle;
+import geometry3d.Cylinder;
+import exceptions.InvalidFigureException;
+import exceptions.InvalidDimensionException;
+
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println("=== Тест 1: Создание таблицы и базовые операции ===");
-        Table table1 = new Table(3, 4);
-        System.out.println("Таблица 3x4 (заполнена нулями):");
-        System.out.println(table1.toString());
-        System.out.println("Количество строк: " + table1.rows());
-        System.out.println("Количество столбцов: " + table1.cols());
-        System.out.println("Среднее значение: " + table1.average());
-
-        System.out.println("\n=== Тест 2: Установка и получение значений ===");
-        table1.setValue(0, 0, 5);
-        table1.setValue(1, 1, 10);
-        table1.setValue(2, 2, 15);
-        table1.setValue(0, 3, 20);
-
-        System.out.println("После установки значений:");
-        System.out.println(table1.toString());
-
-        System.out.println("Значение в [0,0]: " + table1.getValue(0, 0)); // 5
-        System.out.println("Значение в [1,1]: " + table1.getValue(1, 1)); // 10
-        System.out.println("Значение в [2,3]: " + table1.getValue(2, 3)); // 0
-        System.out.println("Среднее значение: " + table1.average());
-
-        System.out.println("\n=== Тест 3: Таблица 2x2 с заполнением ===");
-        Table table2 = new Table(2, 2);
-        table2.setValue(0, 0, 1);
-        table2.setValue(0, 1, 2);
-        table2.setValue(1, 0, 3);
-        table2.setValue(1, 1, 4);
-
-        System.out.println("Таблица 2x2:");
-        System.out.println(table2.toString());
-        System.out.println("Количество строк: " + table2.rows());
-        System.out.println("Количество столбцов: " + table2.cols());
-        System.out.println("Среднее значение: " + table2.average()); // 2.5
-
-        System.out.println("\n=== Тест 4: Таблица 1x1 ===");
-        Table table3 = new Table(1, 1);
-        table3.setValue(0, 0, 100);
-        System.out.println("Таблица 1x1:");
-        System.out.println(table3.toString());
-        System.out.println("Среднее значение: " + table3.average()); // 100.0
-
-        System.out.println("\n=== Тест 5: Большая таблица с вычислениями ===");
-        Table table4 = new Table(2, 3);
-        table4.setValue(0, 0, 1);
-        table4.setValue(0, 1, 2);
-        table4.setValue(0, 2, 3);
-        table4.setValue(1, 0, 4);
-        table4.setValue(1, 1, 5);
-        table4.setValue(1, 2, 6);
-
-        System.out.println("Таблица 2x3:");
-        System.out.println(table4.toString());
-        System.out.println("Среднее значение: " + table4.average()); // 3.5
-
-        System.out.println("\n=== Тест 6: Проверка границ ===");
+        System.out.println("=== Тест 1: Круг и цилиндр ===");
         try {
-            Table table5 = new Table(0, 5); // Должно вызвать исключение
-        } catch (IllegalArgumentException e) {
-            System.out.println("Поймано исключение при создании: " + e.getMessage());
+            Circle circle = new Circle(5.0);
+            System.out.println("Создан: " + circle);
+            System.out.printf("Площадь круга: %.2f\n", circle.area());
+            System.out.printf("Периметр круга: %.2f\n", circle.perimeter());
+
+            Cylinder cylinder = new Cylinder(circle, 10.0);
+            System.out.println("Создан: " + cylinder);
+            System.out.printf("Объем цилиндра: %.2f\n", cylinder.volume());
+        } catch (Exception e) {
+            System.out.println("Ошибка: " + e.getMessage());
         }
 
+        System.out.println("\n=== Тест 2: Прямоугольник и цилиндр ===");
         try {
-            table1.setValue(5, 5, 100); // Выход за границы
-        } catch (IllegalArgumentException e) {
-            System.out.println("Поймано исключение при установке значения: " + e.getMessage());
+            Rectangle rectangle = new Rectangle(3.0, 4.0);
+            System.out.println("Создан: " + rectangle);
+            System.out.printf("Площадь прямоугольника: %.2f\n", rectangle.area());
+            System.out.printf("Периметр прямоугольника: %.2f\n", rectangle.perimeter());
+
+            Cylinder cylinder = new Cylinder(rectangle, 7.0);
+            System.out.println("Создан: " + cylinder);
+            System.out.printf("Объем цилиндра: %.2f\n", cylinder.volume());
+        } catch (Exception e) {
+            System.out.println("Ошибка: " + e.getMessage());
         }
 
+        System.out.println("\n=== Тест 3: Несколько фигур ===");
         try {
-            table1.getValue(10, 2); // Выход за границы
-        } catch (IllegalArgumentException e) {
-            System.out.println("Поймано исключение при получении значения: " + e.getMessage());
+            Circle smallCircle = new Circle(2.5);
+            Rectangle largeRectangle = new Rectangle(8.0, 6.0);
+
+            Cylinder cylinder1 = new Cylinder(smallCircle, 5.0);
+            Cylinder cylinder2 = new Cylinder(largeRectangle, 3.0);
+
+            System.out.println("Цилиндр 1: " + cylinder1);
+            System.out.printf("Объем 1: %.2f\n", cylinder1.volume());
+
+            System.out.println("Цилиндр 2: " + cylinder2);
+            System.out.printf("Объем 2: %.2f\n", cylinder2.volume());
+        } catch (Exception e) {
+            System.out.println("Ошибка: " + e.getMessage());
         }
 
-        System.out.println("\n=== Тест 7: Обновление значений ===");
-        System.out.println("Исходная таблица:");
-        System.out.println(table2.toString());
-        System.out.println("Значение в [1,1] до обновления: " + table2.getValue(1, 1)); // 4
+        System.out.println("\n=== Тест 4: Обработка исключений ===");
 
-        table2.setValue(1, 1, 99);
-        System.out.println("Значение в [1,1] после обновления: " + table2.getValue(1, 1)); // 99
-        System.out.println("Таблица после обновления:");
-        System.out.println(table2.toString());
-        System.out.println("Новое среднее значение: " + table2.average()); // 26.25
+        System.out.println("Попытка создать круг с отрицательным радиусом:");
+        try {
+            Circle invalidCircle = new Circle(-5.0);
+        } catch (InvalidFigureException e) {
+            System.out.println("Поймано InvalidFigureException: " + e.getMessage());
+        }
+
+        System.out.println("Попытка создать прямоугольник с нулевой стороной:");
+        try {
+            Rectangle invalidRect = new Rectangle(0.0, 5.0);
+        } catch (InvalidFigureException e) {
+            System.out.println("Поймано InvalidFigureException: " + e.getMessage());
+        }
+
+        System.out.println("Попытка создать цилиндр с отрицательной высотой:");
+        try {
+            Circle circle = new Circle(5.0);
+            Cylinder invalidCylinder = new Cylinder(circle, -2.0);
+        } catch (InvalidDimensionException e) {
+            System.out.println("Поймано InvalidDimensionException: " + e.getMessage());
+        }
+
+        System.out.println("Попытка создать цилиндр с нулевой высотой:");
+        try {
+            Rectangle rect = new Rectangle(3.0, 4.0);
+            Cylinder invalidCylinder = new Cylinder(rect, 0.0);
+        } catch (InvalidDimensionException e) {
+            System.out.println("Поймано InvalidDimensionException: " + e.getMessage());
+        }
+
+        System.out.println("\n=== Тест 5: Различные вычисления ===");
+        try {
+            Circle circle1 = new Circle(1.0);  // Маленький круг
+            Circle circle2 = new Circle(10.0); // Большой круг
+
+            Rectangle rect1 = new Rectangle(2.0, 2.0); // Квадрат
+            Rectangle rect2 = new Rectangle(1.0, 10.0); // Вытянутый прямоугольник
+
+            System.out.println("Сравнение площадей:");
+            System.out.printf("Круг r=1.0: площадь=%.2f, периметр=%.2f\n",
+                    circle1.area(), circle1.perimeter());
+            System.out.printf("Круг r=10.0: площадь=%.2f, периметр=%.2f\n",
+                    circle2.area(), circle2.perimeter());
+            System.out.printf("Квадрат 2x2: площадь=%.2f, периметр=%.2f\n",
+                    rect1.area(), rect1.perimeter());
+            System.out.printf("Прямоугольник 1x10: площадь=%.2f, периметр=%.2f\n",
+                    rect2.area(), rect2.perimeter());
+
+            System.out.println("\nСравнение объемов цилиндров:");
+            Cylinder cyl1 = new Cylinder(circle1, 5.0);
+            Cylinder cyl2 = new Cylinder(rect2, 5.0);
+            System.out.printf("Цилиндр (круг r=1.0, h=5.0): объем=%.2f\n", cyl1.volume());
+            System.out.printf("Цилиндр (прямоугольник 1x10, h=5.0): объем=%.2f\n", cyl2.volume());
+
+        } catch (Exception e) {
+            System.out.println("Ошибка: " + e.getMessage());
+        }
+
+        System.out.println("\n=== Тест 6: toString() представление ===");
+        try {
+            Circle circle = new Circle(7.5);
+            Rectangle rectangle = new Rectangle(4.2, 3.1);
+            Cylinder cylinder = new Cylinder(circle, 12.3);
+
+            System.out.println("Circle toString(): " + circle);
+            System.out.println("Rectangle toString(): " + rectangle);
+            System.out.println("Cylinder toString(): " + cylinder);
+
+        } catch (Exception e) {
+            System.out.println("Ошибка: " + e.getMessage());
+        }
     }
 }
