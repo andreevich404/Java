@@ -1,112 +1,89 @@
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println("=== Тест 1: Базовое разделение ===");
-        OddEvenSeparator separator1 = new OddEvenSeparator();
+        System.out.println("=== Тест 1: Создание таблицы и базовые операции ===");
+        Table table1 = new Table(3, 4);
+        System.out.println("Таблица 3x4 (заполнена нулями):");
+        System.out.println(table1.toString());
+        System.out.println("Количество строк: " + table1.rows());
+        System.out.println("Количество столбцов: " + table1.cols());
+        System.out.println("Среднее значение: " + table1.average());
 
-        separator1.addNumber(1);
-        separator1.addNumber(2);
-        separator1.addNumber(3);
-        separator1.addNumber(4);
-        separator1.addNumber(5);
+        System.out.println("\n=== Тест 2: Установка и получение значений ===");
+        table1.setValue(0, 0, 5);
+        table1.setValue(1, 1, 10);
+        table1.setValue(2, 2, 15);
+        table1.setValue(0, 3, 20);
 
-        System.out.print("Четные числа: ");
-        separator1.even(); // 2 4
+        System.out.println("После установки значений:");
+        System.out.println(table1.toString());
 
-        System.out.print("Нечетные числа: ");
-        separator1.odd(); // 1 3 5
+        System.out.println("Значение в [0,0]: " + table1.getValue(0, 0)); // 5
+        System.out.println("Значение в [1,1]: " + table1.getValue(1, 1)); // 10
+        System.out.println("Значение в [2,3]: " + table1.getValue(2, 3)); // 0
+        System.out.println("Среднее значение: " + table1.average());
 
-        System.out.println("\n=== Тест 2: Сохранение порядка ===");
-        OddEvenSeparator separator2 = new OddEvenSeparator();
+        System.out.println("\n=== Тест 3: Таблица 2x2 с заполнением ===");
+        Table table2 = new Table(2, 2);
+        table2.setValue(0, 0, 1);
+        table2.setValue(0, 1, 2);
+        table2.setValue(1, 0, 3);
+        table2.setValue(1, 1, 4);
 
-        separator2.addNumber(10);
-        separator2.addNumber(3);
-        separator2.addNumber(8);
-        separator2.addNumber(15);
-        separator2.addNumber(7);
-        separator2.addNumber(2);
+        System.out.println("Таблица 2x2:");
+        System.out.println(table2.toString());
+        System.out.println("Количество строк: " + table2.rows());
+        System.out.println("Количество столбцов: " + table2.cols());
+        System.out.println("Среднее значение: " + table2.average()); // 2.5
 
-        System.out.print("Четные числа: ");
-        separator2.even(); // 10 8 2
+        System.out.println("\n=== Тест 4: Таблица 1x1 ===");
+        Table table3 = new Table(1, 1);
+        table3.setValue(0, 0, 100);
+        System.out.println("Таблица 1x1:");
+        System.out.println(table3.toString());
+        System.out.println("Среднее значение: " + table3.average()); // 100.0
 
-        System.out.print("Нечетные числа: ");
-        separator2.odd(); // 3 15 7
+        System.out.println("\n=== Тест 5: Большая таблица с вычислениями ===");
+        Table table4 = new Table(2, 3);
+        table4.setValue(0, 0, 1);
+        table4.setValue(0, 1, 2);
+        table4.setValue(0, 2, 3);
+        table4.setValue(1, 0, 4);
+        table4.setValue(1, 1, 5);
+        table4.setValue(1, 2, 6);
 
-        System.out.println("\n=== Тест 3: Только четные числа ===");
-        OddEvenSeparator separator3 = new OddEvenSeparator();
+        System.out.println("Таблица 2x3:");
+        System.out.println(table4.toString());
+        System.out.println("Среднее значение: " + table4.average()); // 3.5
 
-        separator3.addNumber(2);
-        separator3.addNumber(4);
-        separator3.addNumber(6);
-        separator3.addNumber(8);
+        System.out.println("\n=== Тест 6: Проверка границ ===");
+        try {
+            Table table5 = new Table(0, 5); // Должно вызвать исключение
+        } catch (IllegalArgumentException e) {
+            System.out.println("Поймано исключение при создании: " + e.getMessage());
+        }
 
-        System.out.print("Четные числа: ");
-        separator3.even(); // 2 4 6 8
+        try {
+            table1.setValue(5, 5, 100); // Выход за границы
+        } catch (IllegalArgumentException e) {
+            System.out.println("Поймано исключение при установке значения: " + e.getMessage());
+        }
 
-        System.out.print("Нечетные числа: ");
-        separator3.odd(); // (пусто)
+        try {
+            table1.getValue(10, 2); // Выход за границы
+        } catch (IllegalArgumentException e) {
+            System.out.println("Поймано исключение при получении значения: " + e.getMessage());
+        }
 
-        System.out.println("\n=== Тест 4: Только нечетные числа ===");
-        OddEvenSeparator separator4 = new OddEvenSeparator();
+        System.out.println("\n=== Тест 7: Обновление значений ===");
+        System.out.println("Исходная таблица:");
+        System.out.println(table2.toString());
+        System.out.println("Значение в [1,1] до обновления: " + table2.getValue(1, 1)); // 4
 
-        separator4.addNumber(1);
-        separator4.addNumber(3);
-        separator4.addNumber(5);
-        separator4.addNumber(7);
-
-        System.out.print("Четные числа: ");
-        separator4.even(); // (пусто)
-
-        System.out.print("Нечетные числа: ");
-        separator4.odd(); // 1 3 5 7
-
-        System.out.println("\n=== Тест 5: Пустой список ===");
-        OddEvenSeparator separator5 = new OddEvenSeparator();
-
-        System.out.print("Четные числа: ");
-        separator5.even(); // (пусто)
-
-        System.out.print("Нечетные числа: ");
-        separator5.odd(); // (пусто)
-
-        System.out.println("\n=== Тест 6: Отрицательные числа ===");
-        OddEvenSeparator separator6 = new OddEvenSeparator();
-
-        separator6.addNumber(-5);
-        separator6.addNumber(-4);
-        separator6.addNumber(-3);
-        separator6.addNumber(-2);
-        separator6.addNumber(0);
-        separator6.addNumber(1);
-
-        System.out.print("Четные числа: ");
-        separator6.even(); // -4 -2 0
-
-        System.out.print("Нечетные числа: ");
-        separator6.odd(); // -5 -3 1
-
-        System.out.println("\n=== Тест 7: Последовательное добавление ===");
-        OddEvenSeparator separator7 = new OddEvenSeparator();
-
-        System.out.println("После добавления 10:");
-        separator7.addNumber(10);
-        System.out.print("Четные: ");
-        separator7.even(); // 10
-        System.out.print("Нечетные: ");
-        separator7.odd(); // (пусто)
-
-        System.out.println("После добавления 7:");
-        separator7.addNumber(7);
-        System.out.print("Четные: ");
-        separator7.even(); // 10
-        System.out.print("Нечетные: ");
-        separator7.odd(); // 7
-
-        System.out.println("После добавления 4:");
-        separator7.addNumber(4);
-        System.out.print("Четные: ");
-        separator7.even(); // 10 4
-        System.out.print("Нечетные: ");
-        separator7.odd(); // 7
+        table2.setValue(1, 1, 99);
+        System.out.println("Значение в [1,1] после обновления: " + table2.getValue(1, 1)); // 99
+        System.out.println("Таблица после обновления:");
+        System.out.println(table2.toString());
+        System.out.println("Новое среднее значение: " + table2.average()); // 26.25
     }
 }
