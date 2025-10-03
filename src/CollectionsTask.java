@@ -1,3 +1,4 @@
+import java.security.SecureRandom;
 import java.util.*;
 
 /**
@@ -8,7 +9,7 @@ public class CollectionsTask {
     private final int arrayLength;
     private final Integer[] array;
     private List<Integer> list;
-    private final Random random;
+    private final SecureRandom random;
 
     /**
      * Конструктор класса CollectionsTask.
@@ -18,7 +19,7 @@ public class CollectionsTask {
         this.arrayLength = arrayLength;
         this.array = new Integer[arrayLength];
         this.list = new ArrayList<>();
-        this.random = new Random();
+        this.random = new SecureRandom();
     }
 
     /**
