@@ -26,6 +26,7 @@ jobs:
           mvn clean verify sonar:sonar \
             -Dsonar.projectKey=andreevich404_Java \
             -Dsonar.organization=andreevich404 \
+            -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.java.binaries=target/classes
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
