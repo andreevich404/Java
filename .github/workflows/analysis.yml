@@ -27,11 +27,8 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build and analyze with Maven
-        run: |
-            mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-              -Dsonar.projectKey=andreevich404_Java \
-              -Dsonar.projectName='Java'
+      - name: Build with Maven
+        run: mvn -B verify
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
