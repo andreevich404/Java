@@ -1,244 +1,183 @@
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.OptionalInt;
+import java.util.Scanner;
+import java.util.stream.Collectors;
 
-/**
- * Класс для управления меню выбора заданий.
- * Обеспечивает взаимодействие с пользователем через консольный ввод.
- */
 public class Menu {
-    private final Scanner scanner;
+    private final List<Visitor> visitors;
 
-    /**
-     * Конструктор класса Menu.
-     * Инициализирует Scanner для чтения ввода пользователя.
-     */
-    public Menu() {
-        this.scanner = new Scanner(System.in);
+    public Menu(List<Visitor> visitors) {
+        this.visitors = visitors;
     }
 
-    /**
-     * Отображает главное меню и обрабатывает выбор пользователя.
-     * Циклически отображает меню до выбора выхода из программы.
-     */
     public void show() {
-        System.out.println("Добро пожаловать в программу работы с коллекциями!");
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
 
-        while (true) {
-            printMainMenu();
-            int choice = getIntInput("Выберите задание (1-5) или 0 для выхода: ");
+        while (!exit) {
+            System.out.println("\n=== Меню лабораторной работы ===");
+            System.out.println("1. Список посетителей и их количество");
+            System.out.println("2. Список всех уникальных книг");
+            System.out.println("3. Книги, отсортированные по году издания");
+            System.out.println("4. Проверка наличия книг Jane Austen");
+            System.out.println("5. Максимальное число книг у одного посетителя");
+            System.out.println("6. Генерация SMS сообщений");
+            System.out.println("0. Выход");
+            System.out.print("Выберите пункт меню: ");
+
+            int choice = scanner.nextInt();
+            System.out.println();
 
             switch (choice) {
-                case 0:
-                    System.out.println("Выход из программы.");
-                    return;
                 case 1:
-                    executeTask1();
+                    taskVisitor();
                     break;
                 case 2:
-                    executeTask2();
+                    uniqueBooks();
                     break;
                 case 3:
-                    executeTask3();
+                    sortBooksByYear();
                     break;
                 case 4:
-                    executeTask4();
+                    hasBookByJaneAusten();
                     break;
                 case 5:
-                    executeTask5();
+                    maxBooksVisitor();
+                    break;
+                case 6:
+                    smsGenerator();
+                    break;
+                case 0:
+                    exit = true;
+                    System.out.println("Выход из программы");
                     break;
                 default:
-                    System.out.println("Неверный выбор.");
+                    System.out.println("Неверный выбор. Попробуйте снова.");
             }
-            waitForEnter();
+
+            if (choice != 0) {
+                System.out.println("\nНажмите Enter для продолжения...");
+                scanner.nextLine();
+                scanner.nextLine();
+            }
         }
+        scanner.close();
     }
 
-    /**
-     * Выводит главное меню на экран.
-     */
-    private void printMainMenu() {
-        System.out.println("\n" + "=".repeat(50));
-        System.out.println("               Главное меню");
-        System.out.println("=".repeat(50));
-        System.out.println("1. Задание №1 - Методы Collections");
-        System.out.println("2. Задание №2 - Генератор простых чисел");
-        System.out.println("3. Задание №3 - Коллекции с объектами Human");
-        System.out.println("4. Задание №4 - Подсчет частоты слов");
-        System.out.println("5. Задание №5 - Обмен ключей и значений в Map");
-        System.out.println("0. Выход");
-        System.out.println("=".repeat(50));
+    private void taskVisitor() {
+        System.out.println("Задание 1: Список посетителей и их количество");
+        System.out.println("Количество посетителей: " + visitors.size());
+        System.out.println("Список посетителей:");
+        visitors.forEach(v -> System.out.println(" - " + v.getName() + " " + v.getSurname()));
     }
 
-    /**
-     * Выполняет задание №1 - Методы Collections.
-     */
-    private void executeTask1() {
-        System.out.println("\n" + "=".repeat(50));
-        System.out.println("Задание №1 - Методы Collections");
-        System.out.println("=".repeat(50));
+    private void uniqueBooks() {
+        System.out.println("Задание 2: Список всех уникальных книг");
 
-        int arrayLength = getIntInput("Введите длину массива: ");
+        List<Book> uniqueBooks = visitors.stream()
+                .flatMap(visitor -> visitor.getFavoriteBooks().stream())
+                .distinct()
+                .collect(Collectors.toList());
 
-        CollectionsTask task = new CollectionsTask(arrayLength);
-
-        task.executeAllOperations();
+        System.out.println("Количество уникальных книг: " + uniqueBooks.size());
+        System.out.println("Список уникальных книг:");
+        uniqueBooks.forEach(book -> System.out.println(" - \"" + book.getName() + "\" by " + book.getAuthor()));
     }
 
-    /**
-     * Выполняет задание №2 - Генератор простых чисел.
-     */
-    private void executeTask2() {
-        System.out.println("\n" + "=".repeat(50));
-        System.out.println("Задание №2 - Генератор простых чисел");
-        System.out.println("=".repeat(50));
+    private void sortBooksByYear () {
+        System.out.println("ЗАДАНИЕ 3: Книги, отсортированные по году издания");
 
-        int primesCount = getIntInput("Введите количество простых чисел: ");
-        PrimesGeneratorTest.execute(primesCount);
+        List<Book> sortedBooks = visitors.stream()
+                .flatMap(visitor -> visitor.getFavoriteBooks().stream())
+                .distinct()
+                .sorted(Comparator.comparingInt(Book::getPublishingYear))
+                .collect(Collectors.toList());
+
+        sortedBooks.forEach(book ->
+                System.out.println(" - " + book.getPublishingYear() + ": \"" + book.getName() + "\""));
     }
 
-    /**
-     * Выполняет задание №3 - Коллекции с объектами Human.
-     */
-    private void executeTask3() {
-        System.out.println("\n" + "=".repeat(50));
-        System.out.println("Задание №3 - Коллекции с объектами Human");
-        System.out.println("=".repeat(50));
+    private void hasBookByJaneAusten() {
+        System.out.println("Задание 4: Проверка наличия книг Jane Austen");
 
-        System.out.println("Выберите вариант:");
-        System.out.println("1 - Использовать готовый список людей");
-        System.out.println("2 - Ввести данные людей вручную");
+        boolean hasJaneAusten = visitors.stream()
+                .flatMap(visitor -> visitor.getFavoriteBooks().stream())
+                .anyMatch(book -> "Jane Austen".equals(book.getAuthor()));
 
-        int choice = getIntInput("Ваш выбор: ");
+        if (hasJaneAusten) {
+            System.out.println("В избранных книгах посетителей есть произведения Jane Austen");
 
-        List<Human> humanList;
+            List<Visitor> austenLovers = visitors.stream()
+                    .filter(visitor -> visitor.getFavoriteBooks().stream().anyMatch(book -> "Jane Austen".equals(book.getAuthor())))
+                    .collect(Collectors.toList());
 
-        if (choice == 1) {
-            humanList = HumanCollectionsDemo.getDefaultHumans();
+            System.out.println("Книги Jane Austen есть у:");
+            austenLovers.forEach(v -> System.out.println(" - " + v.getName() + " " + v.getSurname()));
         } else {
-            humanList = createHumansManually();
-        }
-
-        HumanCollectionsDemo.execute(humanList);
-    }
-
-    /**
-     * Создает список людей на основе ручного ввода.
-     * @return список объектов Human
-     */
-    private List<Human> createHumansManually() {
-        List<Human> humans = new ArrayList<>();
-
-        System.out.println("Введите данные людей (для завершения введите пустую строку в имени):");
-
-        while (true) {
-            System.out.println("\nЧеловек #" + (humans.size() + 1));
-            String firstName = getStringInput("Имя: ");
-
-            if (firstName.isEmpty()) {
-                break;
-            }
-
-            String lastName = getStringInput("Фамилия: ");
-            int age = getIntInput("Возраст: ");
-
-            try {
-                humans.add(new Human(firstName, lastName, age));
-            } catch (IllegalArgumentException e) {
-                System.out.println("Ошибка: " + e.getMessage());
-            }
-        }
-
-        return humans;
-    }
-
-    /**
-     * Выполняет задание №4 - Подсчет частоты слов.
-     */
-    private void executeTask4() {
-        System.out.println("\n" + "=".repeat(50));
-        System.out.println("Задание №4 - Подсчет частоты слов");
-        System.out.println("=".repeat(50));
-
-        System.out.println("Выберите вариант:");
-        System.out.println("1 - Ввести текст вручную");
-        System.out.println("2 - Использовать готовый текст");
-
-        int choice = getIntInput("Ваш выбор: ");
-
-        String text;
-
-        if (choice == 1) {
-            System.out.println("Введите текст (для завершения введите пустую строку):");
-            text = readMultiLineText();
-        } else {
-            text = WordFrequencyCounter.getDefaultText();
-        }
-
-        WordFrequencyCounter.execute(text);
-    }
-
-    /**
-     * Выполняет задание №5 - Обмен ключей и значений в Map.
-     */
-    private void executeTask5() {
-        System.out.println("\n" + "=".repeat(50));
-        System.out.println("Задание №5 - Обмен ключей и значений в Map");
-        System.out.println("=".repeat(50));
-
-        MapUtils.demonstrateUniqueValuesSwap();
-        MapUtils.demonstrateDuplicateValuesSwap();
-        MapUtils.demonstrateSafeSwapWithDuplicates();
-        MapUtils.demonstrateIntegrationWithWordFrequency();
-    }
-
-    /**
-     * Читает многострочный текст от пользователя.
-     * @return введенный текст
-     */
-    private String readMultiLineText() {
-        StringBuilder text = new StringBuilder();
-        String line;
-
-        while (!(line = scanner.nextLine()).isEmpty()) {
-            text.append(line).append(" ");
-        }
-
-        return text.toString().trim();
-    }
-
-    /**
-     * Получает целочисленный ввод от пользователя.
-     * @param prompt приглашение для ввода
-     * @return введенное число
-     */
-    private int getIntInput(String prompt) {
-        while (true) {
-            try {
-                System.out.print(prompt);
-                return scanner.nextInt();
-            } catch (InputMismatchException e) {
-                System.out.println("Ошибка: введите целое число!");
-                scanner.nextLine(); // Очистка буфера
-            }
+            System.out.println("В избранных книгах посетителей нет произведений Jane Austen");
         }
     }
 
-    /**
-     * Получает строковый ввод от пользователя.
-     * @param prompt приглашение для ввода
-     * @return введенная строка
-     */
-    private String getStringInput(String prompt) {
-        System.out.print(prompt);
-        scanner.nextLine();
-        return scanner.nextLine();
+    private void maxBooksVisitor() {
+        System.out.println("Задание 5: Максимальное число книг у одного посетителя");
+
+        OptionalInt maxBooks = visitors.stream()
+                .mapToInt(visitor -> visitor.getFavoriteBooks().size())
+                .max();
+
+        if (maxBooks.isPresent()) {
+            int max = maxBooks.getAsInt();
+            System.out.println("Максимальное количество книг у одного посетителя: " + max);
+
+            List<Visitor> maxBookVisitors = visitors.stream()
+                    .filter(visitor -> visitor.getFavoriteBooks().size() == max)
+                    .collect(Collectors.toList());
+
+            System.out.println("Посетители с максимальным количеством книг:");
+            maxBookVisitors.forEach(v -> System.out.println(" - " + v.getName() + " " + v.getSurname() + " (" + max + " книг)"));
+        }
     }
 
-    /**
-     * Ожидает нажатия Enter для продолжения.
-     */
-    private void waitForEnter() {
-        System.out.println("\nНажмите Enter для продолжения...");
-        scanner.nextLine();
-        scanner.nextLine();
+    private void smsGenerator() {
+        System.out.println("Задание 6: Генерация SMS сообщений");
+
+        List<Visitor> subscribedVisitors = visitors.stream()
+                .filter(Visitor::isSubscribed)
+                .collect(Collectors.toList());
+
+        if (subscribedVisitors.isEmpty()) {
+            System.out.println("Нет подписанных пользователей для рассылки");
+            return;
+        }
+
+        double averageBooks = visitors.stream()
+                .mapToInt(visitor -> visitor.getFavoriteBooks().size())
+                .average()
+                .orElse(0.0);
+
+        System.out.printf("Среднее количество книг на посетителя: %.2f%n", averageBooks);
+
+        List<SmsMessage> smsMessages = subscribedVisitors.stream()
+                .map(visitor -> {
+                    int bookCount = visitor.getFavoriteBooks().size();
+                    String message;
+
+                    if (bookCount > averageBooks) {
+                        message = "you are a bookworm";
+                    }
+                    else if (bookCount < averageBooks) {
+                        message = "read more";
+                    }
+                    else {
+                        message = "fine";
+                    }
+
+                    return new SmsMessage(visitor.getPhone(), message);
+                })
+                .collect(Collectors.toList());
+
+        System.out.println("Сгенерированные SMS сообщения:");
+        smsMessages.forEach(System.out::println);
     }
 }
