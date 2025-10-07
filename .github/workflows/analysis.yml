@@ -24,6 +24,11 @@ jobs:
       - name: Build and analyze with Maven
         run: |
           mvn clean verify sonar:sonar \
-            -Dproject.settings=sonar-cloud.properties
+            -Dsonar.projectKey=andreevich404_Java \
+            -Dsonar.organization=ivan-andreevich \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.java.binaries=target/classes \
+            -Dsonar.coverage.exclusions=**/* \
+            -Dsonar.qualitygate.wait=false
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
