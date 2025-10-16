@@ -1,183 +1,158 @@
-import java.util.Comparator;
-import java.util.List;
-import java.util.OptionalInt;
 import java.util.Scanner;
-import java.util.stream.Collectors;
+import java.util.concurrent.*;
 
 public class Menu {
-    private final List<Visitor> visitors;
-
-    public Menu(List<Visitor> visitors) {
-        this.visitors = visitors;
+    private Menu() {
+        throw new IllegalStateException("Utility class");
     }
 
-    public void show() {
+    public static void show() throws InterruptedException {
         Scanner scanner = new Scanner(System.in);
-        boolean exit = false;
+        ShoeWarehouse warehouse = new ShoeWarehouse(5);
 
-        while (!exit) {
+        while (true) {
             System.out.println("\n=== Меню лабораторной работы ===");
-            System.out.println("1. Список посетителей и их количество");
-            System.out.println("2. Список всех уникальных книг");
-            System.out.println("3. Книги, отсортированные по году издания");
-            System.out.println("4. Проверка наличия книг Jane Austen");
-            System.out.println("5. Максимальное число книг у одного посетителя");
-            System.out.println("6. Генерация SMS сообщений");
+            System.out.println("1. Создание потоков");
+            System.out.println("2. Producer–Consumer (wait/notify)");
+            System.out.println("3. ExecutorService(с прогресс-баром)");
             System.out.println("0. Выход");
-            System.out.print("Выберите пункт меню: ");
+            System.out.println("Выберите пункт: ");
 
             int choice = scanner.nextInt();
-            System.out.println();
-
             switch (choice) {
-                case 1:
-                    taskVisitor();
-                    break;
-                case 2:
-                    uniqueBooks();
-                    break;
-                case 3:
-                    sortBooksByYear();
-                    break;
-                case 4:
-                    hasBookByJaneAusten();
-                    break;
-                case 5:
-                    maxBooksVisitor();
-                    break;
-                case 6:
-                    smsGenerator();
-                    break;
-                case 0:
-                    exit = true;
-                    System.out.println("Выход из программы");
-                    break;
-                default:
-                    System.out.println("Неверный выбор. Попробуйте снова.");
-            }
-
-            if (choice != 0) {
-                System.out.println("\nНажмите Enter для продолжения...");
-                scanner.nextLine();
-                scanner.nextLine();
+                case 1 -> runThreadsExample();
+                case 2 -> runProducerConsumerExample(warehouse);
+                case 3 -> runExecutorExample();
+                case 0 -> {
+                    System.out.println("Выход из программы...");
+                    return;
+                }
+                default -> System.out.println("Неверный выбор!");
             }
         }
-        scanner.close();
     }
 
-    private void taskVisitor() {
-        System.out.println("Задание 1: Список посетителей и их количество");
-        System.out.println("Количество посетителей: " + visitors.size());
-        System.out.println("Список посетителей:");
-        visitors.forEach(v -> System.out.println(" - " + v.getName() + " " + v.getSurname()));
+    private static void runThreadsExample() throws InterruptedException {
+        System.out.println("\n=== Задание 1: Создание потоков ===");
+        Thread evenThread = new EvenThread();
+        Thread oddThread = new Thread(new OddRunnable());
+
+        evenThread.start();
+        oddThread.start();
+
+        evenThread.join();
+        oddThread.join();
     }
 
-    private void uniqueBooks() {
-        System.out.println("Задание 2: Список всех уникальных книг");
+    private static void runProducerConsumerExample(ShoeWarehouse warehouse) throws InterruptedException {
+        System.out.println("\n=== Задание 2: Producer–Consumer ===");
 
-        List<Book> uniqueBooks = visitors.stream()
-                .flatMap(visitor -> visitor.getFavoriteBooks().stream())
-                .distinct()
-                .collect(Collectors.toList());
+        Thread producer = new Thread(() -> {
+            for (int i = 1; i <= 10; i++) {
+                Order order = new Order(i, ShoeWarehouse.SHOE_TYPES.get(i % ShoeWarehouse.SHOE_TYPES.size()), (i + 1) * 2);
+                warehouse.receiveOrder(order);
+                sleepShort(150);
+            }
+        }, "Producer");
 
-        System.out.println("Количество уникальных книг: " + uniqueBooks.size());
-        System.out.println("Список уникальных книг:");
-        uniqueBooks.forEach(book -> System.out.println(" - \"" + book.getName() + "\" by " + book.getAuthor()));
+        Thread consumer = new Thread(() -> {
+            for (int i = 0; i < 10; i++) {
+                warehouse.fulfillOrder();
+                sleepShort(200);
+            }
+        }, "Consumer");
+
+        producer.start();
+        consumer.start();
+        producer.join();
+        consumer.join();
     }
 
-    private void sortBooksByYear () {
-        System.out.println("ЗАДАНИЕ 3: Книги, отсортированные по году издания");
+    private static void runExecutorExample() throws InterruptedException {
+        System.out.println("\n=== Задание 3: ExecutorService с прогресс-баром ===");
+        try (ExecutorService executor = Executors.newFixedThreadPool(4)) {
+            ShoeWarehouse warehouse = new ShoeWarehouse(5);
+            int totalOrders = 10;
+            Progress progress = new Progress(totalOrders);
 
-        List<Book> sortedBooks = visitors.stream()
-                .flatMap(visitor -> visitor.getFavoriteBooks().stream())
-                .distinct()
-                .sorted(Comparator.comparingInt(Book::getPublishingYear))
-                .collect(Collectors.toList());
+            Thread progressThread = new Thread(() -> {
+                while (!progress.isComplete()) {
+                    progress.render();
+                    sleepShort(100);
+                }
+                progress.render();
+            });
+            progressThread.start();
 
-        sortedBooks.forEach(book ->
-                System.out.println(" - " + book.getPublishingYear() + ": \"" + book.getName() + "\""));
-    }
+            for (int i = 1; i <= totalOrders; i++) {
+                Order order = new Order(i, ShoeWarehouse.SHOE_TYPES.get(i % ShoeWarehouse.SHOE_TYPES.size()), (i + 1) * 2);
 
-    private void hasBookByJaneAusten() {
-        System.out.println("Задание 4: Проверка наличия книг Jane Austen");
+                executor.submit(() -> {
+                    warehouse.receiveOrder(order);
+                    System.out.println(Thread.currentThread().getName() + " добавил заказ: " + order);
+                    sleepShort(150);
+                });
 
-        boolean hasJaneAusten = visitors.stream()
-                .flatMap(visitor -> visitor.getFavoriteBooks().stream())
-                .anyMatch(book -> "Jane Austen".equals(book.getAuthor()));
+                executor.submit(() -> {
+                    warehouse.fulfillOrder();
+                    progress.increment();
+                    sleepShort(250);
+                });
+            }
+            executor.shutdown();
+            if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
+                System.err.println("Some tasks did not complete in time");
+            }
+            progress.complete();
+            progressThread.join();
 
-        if (hasJaneAusten) {
-            System.out.println("В избранных книгах посетителей есть произведения Jane Austen");
-
-            List<Visitor> austenLovers = visitors.stream()
-                    .filter(visitor -> visitor.getFavoriteBooks().stream().anyMatch(book -> "Jane Austen".equals(book.getAuthor())))
-                    .collect(Collectors.toList());
-
-            System.out.println("Книги Jane Austen есть у:");
-            austenLovers.forEach(v -> System.out.println(" - " + v.getName() + " " + v.getSurname()));
-        } else {
-            System.out.println("В избранных книгах посетителей нет произведений Jane Austen");
+            System.out.println("\nВсе заказы обработаны.");
         }
     }
 
-    private void maxBooksVisitor() {
-        System.out.println("Задание 5: Максимальное число книг у одного посетителя");
-
-        OptionalInt maxBooks = visitors.stream()
-                .mapToInt(visitor -> visitor.getFavoriteBooks().size())
-                .max();
-
-        if (maxBooks.isPresent()) {
-            int max = maxBooks.getAsInt();
-            System.out.println("Максимальное количество книг у одного посетителя: " + max);
-
-            List<Visitor> maxBookVisitors = visitors.stream()
-                    .filter(visitor -> visitor.getFavoriteBooks().size() == max)
-                    .collect(Collectors.toList());
-
-            System.out.println("Посетители с максимальным количеством книг:");
-            maxBookVisitors.forEach(v -> System.out.println(" - " + v.getName() + " " + v.getSurname() + " (" + max + " книг)"));
+    private static void sleepShort(int ms) {
+        try {
+            Thread.sleep(ms);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.out.println("Виртуальный поток прерван" + e);
         }
     }
 
-    private void smsGenerator() {
-        System.out.println("Задание 6: Генерация SMS сообщений");
+    private static class Progress {
+        private final int total;
+        private int current = 0;
+        private volatile boolean done = false;
 
-        List<Visitor> subscribedVisitors = visitors.stream()
-                .filter(Visitor::isSubscribed)
-                .collect(Collectors.toList());
-
-        if (subscribedVisitors.isEmpty()) {
-            System.out.println("Нет подписанных пользователей для рассылки");
-            return;
+        public Progress(int total) {
+            this.total = total;
         }
 
-        double averageBooks = visitors.stream()
-                .mapToInt(visitor -> visitor.getFavoriteBooks().size())
-                .average()
-                .orElse(0.0);
+        public synchronized void increment() {
+            current++;
+        }
 
-        System.out.printf("Среднее количество книг на посетителя: %.2f%n", averageBooks);
+        public boolean isComplete() {
+            return done;
+        }
 
-        List<SmsMessage> smsMessages = subscribedVisitors.stream()
-                .map(visitor -> {
-                    int bookCount = visitor.getFavoriteBooks().size();
-                    String message;
+        public synchronized void complete() {
+            done = true;
+        }
 
-                    if (bookCount > averageBooks) {
-                        message = "you are a bookworm";
-                    }
-                    else if (bookCount < averageBooks) {
-                        message = "read more";
-                    }
-                    else {
-                        message = "fine";
-                    }
+        public synchronized void render() {
+            int percent = (int) ((current / (double) total) * 100);
+            int bars = percent / 10;
+            StringBuilder bar = new StringBuilder("\r[#");
+            for (int i = 1; i < 10; i++) {
+                bar.append(i < bars ? "#" : "-");
+            }
+            bar.append("] ").append(percent).append("%");
 
-                    return new SmsMessage(visitor.getPhone(), message);
-                })
-                .collect(Collectors.toList());
-
-        System.out.println("Сгенерированные SMS сообщения:");
-        smsMessages.forEach(System.out::println);
+            System.out.println("\033[F");
+            System.out.println(bar + "\n");
+            System.out.flush();
+        }
     }
 }
