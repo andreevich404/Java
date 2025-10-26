@@ -1,158 +1,130 @@
 import java.util.Scanner;
-import java.util.concurrent.*;
 
+/**
+ * Класс для отображения меню выбора заданий лабораторной работы
+ */
 public class Menu {
-    private Menu() {
-        throw new IllegalStateException("Utility class");
+    private Scanner scanner;
+
+    public Menu() {
+        this.scanner = new Scanner(System.in);
     }
 
-    public static void show() throws InterruptedException {
-        Scanner scanner = new Scanner(System.in);
-        ShoeWarehouse warehouse = new ShoeWarehouse(5);
-
+    /**
+     * Отображает главное меню и обрабатывает выбор пользователя
+     */
+    public void show() {
         while (true) {
-            System.out.println("\n=== Меню лабораторной работы ===");
-            System.out.println("1. Создание потоков");
-            System.out.println("2. Producer–Consumer (wait/notify)");
-            System.out.println("3. ExecutorService(с прогресс-баром)");
-            System.out.println("0. Выход");
-            System.out.println("Выберите пункт: ");
+            displayMenu();
+            int choice = getChoice();
 
-            int choice = scanner.nextInt();
             switch (choice) {
-                case 1 -> runThreadsExample();
-                case 2 -> runProducerConsumerExample(warehouse);
-                case 3 -> runExecutorExample();
-                case 0 -> {
+                case 1:
+                    runTask1();
+                    break;
+                case 2:
+                    runTask2();
+                    break;
+                case 3:
+                    runBothTasks();
+                    break;
+                case 0:
                     System.out.println("Выход из программы...");
                     return;
-                }
-                default -> System.out.println("Неверный выбор!");
+                default:
+                    System.out.println("Неверный выбор! Попробуйте снова.");
             }
+
+            pause();
         }
     }
 
-    private static void runThreadsExample() throws InterruptedException {
-        System.out.println("\n=== Задание 1: Создание потоков ===");
-        Thread evenThread = new EvenThread();
-        Thread oddThread = new Thread(new OddRunnable());
-
-        evenThread.start();
-        oddThread.start();
-
-        evenThread.join();
-        oddThread.join();
+    /**
+     * Отображает главное меню
+     */
+    private void displayMenu() {
+        System.out.println("\n" + "=".repeat(50));
+        System.out.println("       ЛАБОРАТОРНАЯ РАБОТА №6");
+        System.out.println("Рефлексия, аннотации и работа с файловой системой");
+        System.out.println("=".repeat(50));
+        System.out.println("1. Задание 1 - Рефлексия и аннотации");
+        System.out.println("2. Задание 2 - Работа с файловой системой");
+        System.out.println("3. Оба задания последовательно");
+        System.out.println("0. Выход");
+        System.out.println("=".repeat(50));
+        System.out.print("Выберите задание: ");
     }
 
-    private static void runProducerConsumerExample(ShoeWarehouse warehouse) throws InterruptedException {
-        System.out.println("\n=== Задание 2: Producer–Consumer ===");
-
-        Thread producer = new Thread(() -> {
-            for (int i = 1; i <= 10; i++) {
-                Order order = new Order(i, ShoeWarehouse.SHOE_TYPES.get(i % ShoeWarehouse.SHOE_TYPES.size()), (i + 1) * 2);
-                warehouse.receiveOrder(order);
-                sleepShort(150);
-            }
-        }, "Producer");
-
-        Thread consumer = new Thread(() -> {
-            for (int i = 0; i < 10; i++) {
-                warehouse.fulfillOrder();
-                sleepShort(200);
-            }
-        }, "Consumer");
-
-        producer.start();
-        consumer.start();
-        producer.join();
-        consumer.join();
-    }
-
-    private static void runExecutorExample() throws InterruptedException {
-        System.out.println("\n=== Задание 3: ExecutorService с прогресс-баром ===");
-        try (ExecutorService executor = Executors.newFixedThreadPool(4)) {
-            ShoeWarehouse warehouse = new ShoeWarehouse(5);
-            int totalOrders = 10;
-            Progress progress = new Progress(totalOrders);
-
-            Thread progressThread = new Thread(() -> {
-                while (!progress.isComplete()) {
-                    progress.render();
-                    sleepShort(100);
-                }
-                progress.render();
-            });
-            progressThread.start();
-
-            for (int i = 1; i <= totalOrders; i++) {
-                Order order = new Order(i, ShoeWarehouse.SHOE_TYPES.get(i % ShoeWarehouse.SHOE_TYPES.size()), (i + 1) * 2);
-
-                executor.submit(() -> {
-                    warehouse.receiveOrder(order);
-                    System.out.println(Thread.currentThread().getName() + " добавил заказ: " + order);
-                    sleepShort(150);
-                });
-
-                executor.submit(() -> {
-                    warehouse.fulfillOrder();
-                    progress.increment();
-                    sleepShort(250);
-                });
-            }
-            executor.shutdown();
-            if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
-                System.err.println("Some tasks did not complete in time");
-            }
-            progress.complete();
-            progressThread.join();
-
-            System.out.println("\nВсе заказы обработаны.");
-        }
-    }
-
-    private static void sleepShort(int ms) {
+    /**
+     * Получает и проверяет выбор пользователя
+     */
+    private int getChoice() {
         try {
-            Thread.sleep(ms);
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.out.println("Виртуальный поток прерван" + e);
+            return Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            return -1;
         }
     }
 
-    private static class Progress {
-        private final int total;
-        private int current = 0;
-        private volatile boolean done = false;
+    /**
+     * Выполняет Задание 1 - Рефлексия и аннотации
+     */
+    private void runTask1() {
+        System.out.println("\n" + "=".repeat(50));
+        System.out.println("ЗАДАНИЕ 1: Рефлексия и аннотации");
+        System.out.println("=".repeat(50));
 
-        public Progress(int total) {
-            this.total = total;
+        try {
+            Invoker.main(new String[]{});
+        } catch (Exception e) {
+            System.err.println("Ошибка при выполнении задания 1: " + e.getMessage());
+            e.printStackTrace();
         }
+    }
 
-        public synchronized void increment() {
-            current++;
+    /**
+     * Выполняет Задание 2 - Работа с файловой системой
+     */
+    private void runTask2() {
+        System.out.println("\n" + "=".repeat(50));
+        System.out.println("ЗАДАНИЕ 2: Работа с файловой системой");
+        System.out.println("=".repeat(50));
+
+        try {
+            FileSystemManager.main(new String[]{});
+        } catch (Exception e) {
+            System.err.println("Ошибка при выполнении задания 2: " + e.getMessage());
+            e.printStackTrace();
         }
+    }
 
-        public boolean isComplete() {
-            return done;
-        }
+    /**
+     * Выполняет оба задания последовательно
+     */
+    private void runBothTasks() {
+        System.out.println("\n" + "=".repeat(50));
+        System.out.println("ВЫПОЛНЕНИЕ ОБОИХ ЗАДАНИЙ");
+        System.out.println("=".repeat(50));
 
-        public synchronized void complete() {
-            done = true;
-        }
+        runTask1();
+        System.out.println("\n" + "-".repeat(50));
+        runTask2();
+    }
 
-        public synchronized void render() {
-            int percent = (int) ((current / (double) total) * 100);
-            int bars = percent / 10;
-            StringBuilder bar = new StringBuilder("\r[#");
-            for (int i = 1; i < 10; i++) {
-                bar.append(i < bars ? "#" : "-");
-            }
-            bar.append("] ").append(percent).append("%");
+    /**
+     * Пауза перед возвратом в меню
+     */
+    private void pause() {
+        System.out.println("\nНажмите Enter для продолжения...");
+        scanner.nextLine();
+    }
 
-            System.out.println("\033[F");
-            System.out.println(bar + "\n");
-            System.out.flush();
+    /**
+     * Закрывает ресурсы
+     */
+    public void close() {
+        if (scanner != null) {
+            scanner.close();
         }
     }
 }
