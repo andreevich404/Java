@@ -51,7 +51,6 @@ public class FileSystemManager {
         }
         catch (IOException e) {
             System.err.println("Ошибка ввода-вывода: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 

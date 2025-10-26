@@ -12,7 +12,7 @@ public class Invoker {
 
         }
         catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Ошибка Invoker: " + e.getMessage());
         }
     }
 

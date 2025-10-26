@@ -78,7 +78,6 @@ public class Menu {
             Invoker.main(new String[]{});
         } catch (Exception e) {
             System.err.println("Ошибка при выполнении задания 1: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -94,7 +93,6 @@ public class Menu {
             FileSystemManager.main(new String[]{});
         } catch (Exception e) {
             System.err.println("Ошибка при выполнении задания 2: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
