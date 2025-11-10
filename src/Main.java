@@ -1,8 +1,12 @@
+import dip.EmailSender;
+import dip.NotificationService;
+import dip.SmsSender;
+import isp.OldPrinter;
+import isp.Printer;
 import lsp.Bird;
 import lsp.Penguin;
 import lsp.Sparrow;
 import ocp.DiscountCalculator;
-import ocp.RegularDiscount;
 import srp.ReportManager;
 
 import java.util.List;
@@ -22,7 +26,18 @@ public class Main {
 
         // ---------- L ----------
         displayBird(new Sparrow());
-        displayBird(new Penguin());     // Здесь будет исключение
+        // displayBird(new Penguin());     // Здесь будет исключение(закоментил чтобы не блокировал код ниже)
+
+        // ---------- I ----------
+        Printer printer = new OldPrinter();
+        printer.print("Отчёт за неделю");
+
+        // ---------- D ----------
+        NotificationService emailService = new NotificationService(new EmailSender());
+        emailService.send("Ваш заказ готов к выдаче!");
+        // Проверка SmsSender
+        NotificationService smsService = new NotificationService(new SmsSender());
+        smsService.send("Ваш заказ готов к выдаче!");
     }
 
     public static void displayBird(Bird bird) {
