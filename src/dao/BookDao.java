@@ -42,30 +42,47 @@ public class BookDao {
 
         try (Connection conn = DbUtil.getConnection()) {
             for (Visitor visitor : visitors) {
-                try (PreparedStatement ps = conn.prepareStatement(
-                        "MERGE INTO visitors (name,surname,phone,subscribed) KEY(name,surname) VALUES (?,?,?,?)")) {
-                    ps.setString(1, visitor.getName());
-                    ps.setString(2, visitor.getSurname());
-                    ps.setString(3, visitor.getPhone());
-                    ps.setBoolean(4, visitor.isSubscribed());
-                    ps.executeUpdate();
-                }
-
+                insertVisitor(conn, visitor);
                 if (visitor.getFavoriteBooks() != null) {
                     for (Book book : visitor.getFavoriteBooks()) {
-                        try (PreparedStatement ps = conn.prepareStatement(
-                                "MERGE INTO books (name,author,publishingYear,isbn,publisher) KEY(isbn) VALUES (?,?,?,?,?)")) {
-                            ps.setString(1, book.getName());
-                            ps.setString(2, book.getAuthor());
-                            ps.setInt(3, book.getPublishingYear());
-                            ps.setString(4, book.getIsbn());
-                            ps.setString(5, book.getPublisher());
-                            ps.executeUpdate();
-                        }
+                        insertBook(conn, book);
                     }
                 }
             }
         }
+    }
+
+    private void insertVisitor(Connection conn, Visitor visitor) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "MERGE INTO visitors (name,surname,phone,subscribed) KEY(name,surname) VALUES (?,?,?,?)")) {
+            ps.setString(1, visitor.getName());
+            ps.setString(2, visitor.getSurname());
+            ps.setString(3, visitor.getPhone());
+            ps.setBoolean(4, visitor.isSubscribed());
+            ps.executeUpdate();
+        }
+    }
+
+    private void insertBook(Connection conn, Book book) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "MERGE INTO books (name,author,publishingYear,isbn,publisher) KEY(isbn) VALUES (?,?,?,?,?)")) {
+            ps.setString(1, book.getName());
+            ps.setString(2, book.getAuthor());
+            ps.setInt(3, book.getPublishingYear());
+            ps.setString(4, book.getIsbn());
+            ps.setString(5, book.getPublisher());
+            ps.executeUpdate();
+        }
+    }
+
+    private Book mapBook(ResultSet rs) throws SQLException {
+        Book b = new Book();
+        b.setName(rs.getString("name"));
+        b.setAuthor(rs.getString("author"));
+        b.setPublishingYear(rs.getInt("publishingYear"));
+        b.setIsbn(rs.getString("isbn"));
+        b.setPublisher(rs.getString("publisher"));
+        return b;
     }
 
     public List<Book> getAllBooks() throws Exception {
@@ -74,13 +91,7 @@ public class BookDao {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT * " + "FROM books ORDER BY id")) {
             while (rs.next()) {
-                Book b = new Book();
-                b.setName(rs.getString("name"));
-                b.setAuthor(rs.getString("author"));
-                b.setPublishingYear(rs.getInt("publishingYear"));
-                b.setIsbn(rs.getString("isbn"));
-                b.setPublisher(rs.getString("publisher"));
-                list.add(b);
+                list.add(mapBook(rs));
             }
         }
         return list;
@@ -92,13 +103,7 @@ public class BookDao {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT * " + "FROM books ORDER BY publishingYear")) {
             while (rs.next()) {
-                Book b = new Book();
-                b.setName(rs.getString("name"));
-                b.setAuthor(rs.getString("author"));
-                b.setPublishingYear(rs.getInt("publishingYear"));
-                b.setIsbn(rs.getString("isbn"));
-                b.setPublisher(rs.getString("publisher"));
-                list.add(b);
+                list.add(mapBook(rs));
             }
         }
         return list;
@@ -110,13 +115,7 @@ public class BookDao {
              PreparedStatement ps = conn.prepareStatement("SELECT * " + "FROM books WHERE publishingYear < 2000");
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Book b = new Book();
-                b.setName(rs.getString("name"));
-                b.setAuthor(rs.getString("author"));
-                b.setPublishingYear(rs.getInt("publishingYear"));
-                b.setIsbn(rs.getString("isbn"));
-                b.setPublisher(rs.getString("publisher"));
-                list.add(b);
+                list.add(mapBook(rs));
             }
         }
         return list;
