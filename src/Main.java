@@ -1,47 +1,77 @@
-import dip.EmailSender;
-import dip.NotificationService;
-import dip.SmsSender;
-import isp.OldPrinter;
-import isp.Printer;
-import lsp.Bird;
-import lsp.Penguin;
-import lsp.Sparrow;
-import ocp.DiscountCalculator;
-import srp.ReportManager;
+import model.Book;
+import service.BookService;
+import service.MusicService;
 
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        Scanner scanner = new Scanner(System.in);
+        MusicService musicService = new MusicService();
+        BookService bookService = new BookService(new dao.BookDao());
 
-        // ---------- S ----------
-        ReportManager manager = new ReportManager(List.of(5, 10, 15, 20));
-        manager.generateReport();
+        musicService.createMusicTable();
+        musicService.insertMusicInitialData();
 
-        // ---------- O ----------
-        DiscountCalculator calculator = new DiscountCalculator();
-        System.out.println("Regular: " + calculator.calculateDiscount("regular", 1000));
-        System.out.println("VIP: " + calculator.calculateDiscount("vip", 1000));
-        System.out.println("Super VIP: " + calculator.calculateDiscount("super_vip", 1000));
+        boolean running = true;
+        while (running) {
+            System.out.println("\n--- Меню ---");
+            System.out.println("1. Показать все композиции");
+            System.out.println("2. Показать композиции без букв 'm' и 't'");
+            System.out.println("3. Добавить любимую композицию");
+            System.out.println("4. Импортировать посетителей и книги из JSON");
+            System.out.println("5. Показать книги, отсортированные по году");
+            System.out.println("6. Показать книги младше 2000 года");
+            System.out.println("7. Добавить информацию о себе и любимые книги");
+            System.out.println("8. Удалить таблицы посетителей и книг");
+            System.out.println("0. Выход");
+            System.out.print("Выберите действие: ");
 
-        // ---------- L ----------
-        displayBird(new Sparrow());
-        // displayBird(new Penguin());     // Здесь будет исключение(закоментил чтобы не блокировал код ниже)
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // очистка буфера
 
-        // ---------- I ----------
-        Printer printer = new OldPrinter();
-        printer.print("Отчёт за неделю");
-
-        // ---------- D ----------
-        NotificationService emailService = new NotificationService(new EmailSender());
-        emailService.send("Ваш заказ готов к выдаче!");
-        // Проверка SmsSender
-        NotificationService smsService = new NotificationService(new SmsSender());
-        smsService.send("Ваш заказ готов к выдаче!");
-    }
-
-    public static void displayBird(Bird bird) {
-        bird.eat();
-        bird.fly();
+            switch (choice) {
+                case 1 -> {
+                    System.out.println("Все композиции:");
+                    musicService.getAllMusic().forEach(System.out::println);
+                }
+                case 2 -> {
+                    System.out.println("Композиции без букв 'm' и 't':");
+                    musicService.getMusicWithoutMAndT().forEach(System.out::println);
+                }
+                case 3 -> {
+                    System.out.print("Введите название композиции: ");
+                    String name = scanner.nextLine();
+                    musicService.addMusic(name);
+                    System.out.println("Композиция добавлена.");
+                }
+                case 4 -> {
+                    bookService.importFromJson("./books.json");
+                    System.out.println("Данные из JSON импортированы.");
+                }
+                case 5 -> {
+                    System.out.println("Книги, отсортированные по году:");
+                    List<Book> sorted = bookService.getBooksSortedByYear();
+                    sorted.forEach(System.out::println);
+                }
+                case 6 -> {
+                    System.out.println("Книги младше 2000 года:");
+                    List<Book> before2000 = bookService.getBooksBefore2000();
+                    before2000.forEach(System.out::println);
+                }
+                case 7 -> System.out.println("Добавьте информацию о себе в JSON и повторите пункт 4.");
+                case 8 -> {
+                    bookService.dropTables();
+                    System.out.println("Таблицы посетителей и книг удалены.");
+                }
+                case 0 -> {
+                    System.out.println("Выход.");
+                    running = false;
+                    System.exit(0);
+                }
+                default -> System.out.println("Неверный выбор.");
+            }
+        }
     }
 }
