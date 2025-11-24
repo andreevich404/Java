@@ -11,7 +11,7 @@ import app.Main;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.security.SecureRandom;
 
 public class ShapesController {
 
@@ -19,7 +19,7 @@ public class ShapesController {
     private final List<Shape> shapes = new ArrayList<>();
     private Shape selectedShape = null;
     private double offsetX, offsetY;
-    private final Random random = new Random();
+    private final SecureRandom random = new SecureRandom();
 
     @FXML
     private void initialize() {
